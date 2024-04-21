@@ -1,0 +1,2 @@
+datasets = ["aniso", "blobs", "circles", "moons", "nostructure" , "socialnorms"]
+clustering = ["hbdscan", "kmeans", "spectral"]
