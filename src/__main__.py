@@ -1,23 +1,20 @@
 import argparse
 
+import os
+
 import tomllib
 
-from src.clustering.clustering_algo import ClusteringAlgorithm
-from src.clustering.hbdscan_cluster import HBDSCANCluster
-from src.clustering.kmeans_cluster import KMeansCluster
-from src.clustering.spectral_cluster import SpectralCluster
+from typing import Dict, Any
 
+import matplotlib.pyplot as plt
 
-from src.datasets.aniso import AnisoSyntheticDataset
-from src.datasets.blobs import BlobsSyntheticDataset
-from src.datasets.circles import CirclesSyntheticDataset
-from src.datasets.dataset import Dataset
-from src.datasets.moons import MoonsSyntheticDataset
-from src.datasets.no_structure import NoStructureSyntheticDataset
-from src.datasets.social_norms import SocialNormsDataset
+from src.clustering import *
 
+from src.datasets import *
 
-def get_clustering(clustering_name, kwargs) -> ClusteringAlgorithm:
+from src.dimension_reduction import *
+
+def get_clustering(clustering_name: str, kwargs: Dict[str, Any]) -> ClusteringAlgorithm:
 
     name_to_cluster = {
         "hbdscan": HBDSCANCluster,
@@ -31,7 +28,7 @@ def get_clustering(clustering_name, kwargs) -> ClusteringAlgorithm:
     return name_to_cluster[clustering_name](kwargs)
 
 
-def get_dataset(dataset_name, kwargs) -> Dataset:
+def get_dataset(dataset_name: str, kwargs: Dict[str, Any]) -> Dataset:
 
     name_to_dataset = {
         "aniso": AnisoSyntheticDataset,
@@ -54,7 +51,33 @@ def get_dataset(dataset_name, kwargs) -> Dataset:
     
         return dataset.generate_dataset(kwargs)
 
+def get_dimension_reducer(reducer_name: str, kwargs: Dict[str, Any]) -> DimensionReduction:
 
+    name_to_reducer = {
+        "diffusion": DiffusionMapReducer,
+        "isomap" : IsomapReducer,
+        "kpca": KernelPCAReducer,
+        "lle" : LocalLinearEmbeddingReducer,
+        "mds" : MultiDimensionalScalingReducer,
+        "pca" : PCAReducer,
+        "spectral" : SpectralReducer,
+        "tsne" : TSNEReducer,
+        "umap": UMAPReducer
+    }
+
+    if reducer_name not in name_to_reducer:
+        raise ValueError()
+    
+    return name_to_reducer[reducer_name](kwargs)
+    
+
+def visualize(X, labels, name):
+    plt.scatter(X[:, 0], X[:, 1], c=labels)
+
+    plt.savefig(os.path.join("visualization", f"{name}.png"))
+
+    plt.clf()
+    
 
 def main(args):
 
@@ -68,10 +91,15 @@ def main(args):
 
     if "datasets" not in config:
         raise ValueError()
+    
+    os.makedirs("visualization/")
 
     clustering_methods = config["clustering"]
 
     datasets = config["datasets"]
+
+    if "socialnorms" in datasets and "dim_red" not in config:
+        raise ValueError()
 
     for dataset in datasets:
 
@@ -83,7 +111,26 @@ def main(args):
 
             labels = clustering_algo.cluster(X)
 
-            # ima be 100 with you abe, idk what are we doing here 
+            if dataset == "socialnorms":
+                
+                dimension_reducers = config["dim_red"]
+
+                for dimension_reducer in dimension_reducers:
+
+                    reducer = get_dimension_reducer(dimension_reducer, config.get(clustering_method, {}))
+
+                    reduced_X = reducer.reduce(X)
+
+                    name = f"{dataset}_{clustering_method}_{dimension_reducer}"
+
+                    visualize(reduced_X, labels, name)
+            
+            else:
+                name = f"{dataset}_{clustering_method}"
+
+                visualize(X, labels, name)
+
+
 
 
 if __name__ == "__main__":
