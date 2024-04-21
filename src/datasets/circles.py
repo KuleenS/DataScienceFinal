@@ -4,7 +4,7 @@ import sklearn.datasets as datasets
 
 from src.datasets.dataset import Dataset
 
-class BlobsSyntheticDataset(Dataset):
+class CirclesSyntheticDataset(Dataset):
 
     def __init__(self) -> None:
         super().__init__()
