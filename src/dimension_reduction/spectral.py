@@ -3,7 +3,7 @@ from sklearn.manifold import SpectralEmbedding
 
 from dimension_reduction import DimensionReduction
 
-class MultiDimensionalScalingReducer(DimensionReduction):
+class SpectralReducer(DimensionReduction):
 
     def __init__(self, kwargs) -> None:
         super().__init__(kwargs)

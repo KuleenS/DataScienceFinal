@@ -4,7 +4,7 @@ from sklearn.manifold import TSNE
 from dimension_reduction import DimensionReduction
 
 
-class MultiDimensionalScalingReducer(DimensionReduction):
+class TSNEReducer(DimensionReduction):
 
     def __init__(self, kwargs) -> None:
         super().__init__(kwargs)
