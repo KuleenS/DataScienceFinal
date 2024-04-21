@@ -4,7 +4,7 @@ import numpy as np
 
 from src.datasets.dataset import Dataset
 
-class MoonsSyntheticDataset(Dataset):
+class NoStructureSyntheticDataset(Dataset):
 
     def __init__(self) -> None:
         super().__init__()
