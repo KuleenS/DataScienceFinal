@@ -4,7 +4,7 @@ import torch
 from tqdm import tqdm
 import json
 import pickle
-
+from data_utils import read_cultural_bank
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -17,18 +17,11 @@ if __name__ == "__main__":
     save_path = data_path.split(".")[0] + f"-model_name={model_name_for_path}-bsz={args.bsz}.pkl"
 
     sbert = SentenceTransformer(args.model_name, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
-    data = []
-    # read jsonl
-    with open(data_path) as f:
-        for line in tqdm(f.readlines(), desc="Reading data", total=len(f.readlines())):
-            obj = json.loads(line)
-            data.append([obj['contents']])
-        f.close()
-    print(len(data))
+    
+    data, _, _ = read_cultural_bank(data_path)
     
     # batch encode data
     embeddings = []
-    # batch the data
     batches = [data[i:i+args.bsz] for i in range(0, len(data), args.bsz)]
     assert len(data) == sum([len(b) for b in batches])
     for batch in tqdm(batches, desc="Encoding data"):
